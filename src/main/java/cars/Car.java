@@ -1,6 +1,7 @@
 package cars;
 
 
+import java.util.ArrayList;
 
 public class Car {
 
@@ -11,6 +12,9 @@ public class Car {
     protected String modelName;
 
 
+    public String getEngine() {
+        return engine;
+    }
 
     public void setManufacturerName(String manufacturerName) {
         this.manufacturerName = manufacturerName;
@@ -48,4 +52,6 @@ public class Car {
 
         return String.join(" ", manufacturerName, modelName, engine);
     }
+
+
 }

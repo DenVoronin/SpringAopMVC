@@ -5,54 +5,56 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.ArrayList;
 
 @org.springframework.stereotype.Controller
 @ResponseBody
 
 
 public class Controller {
-    private final ServiceForDiesel serviceForDiesel;
-    private final ServiceForPetrol serviceForPetrol;
+
     private final ServiceForAllTypesEngine serviceForAllTypesEngine;
+    private final Repository repository;
     @Autowired
-    public Controller(ServiceForDiesel serviceForDiesel, ServiceForPetrol serviceForPetrol, ServiceForAllTypesEngine serviceForAllTypesEngine) {
-        this.serviceForDiesel = serviceForDiesel;
-        this.serviceForPetrol = serviceForPetrol;
+    public Controller( ServiceForAllTypesEngine serviceForAllTypesEngine, Repository repository) {
+        this.repository=repository;
         this.serviceForAllTypesEngine = serviceForAllTypesEngine;
     }
 
 
 
-    @RequestMapping(value = "/", method = RequestMethod.POST)
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
     @FuelExceptionHandler()
-    public String createCar(@RequestParam String engineType, @RequestParam String modelName, @RequestParam String manufacturerName) throws Exception
+    public ModelAndView add(@RequestParam String modelName, @RequestParam String  manufacturerName, @RequestParam String engine) throws Exception
     {
 
-            Engine engine = serviceForAllTypesEngine.createEngine(engineType);
-        Car car = new Car(modelName, manufacturerName, engine.engineType.toString());
-        System.out.println(car.toString());
-        return engine.powerUp() + "\ncreated: " + car.toString();
+        Engine engine1 = serviceForAllTypesEngine.createEngine(engine);
+        Car car = new Car(modelName, manufacturerName, engine1.engineType.toString());
 
-           /* if (Engine.type.Diesel.toString().equals(engineType) ) {
-                Engine engine = serviceForDiesel.createEngineDiesel();
-                Car car = new Car(modelName, manufacturerName, engine.engineType.toString());
-                System.out.println(car.toString());
-                return engine.powerUp() + "\ncreated: " + car.toString();
-            }
-            if (Engine.type.Petrol.toString().equals(engineType)) {
-                Engine engine = serviceForPetrol.createEnginePetrol();
-                Car car = new Car(modelName, manufacturerName, engine.engineType.toString());
-                System.out.println(car.toString());
-                return engine.powerUp() + "\ncreated: " + car.toString();
-            }
+         repository.add(car);
+
+       
 
 
-        return("not ok");
-
-            */
-
+        return new ModelAndView("/");
     }
+    @RequestMapping(value = "/create", method = RequestMethod.GET)
+    public ModelAndView check(){
+
+        return new ModelAndView("create");
+    }
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public ModelAndView index(Model model){
+
+
+        model.addAttribute("cars", repository.getAll());
+        return new ModelAndView("index");
+    }
+
     @RequestMapping(value = "/check/fuel", method = RequestMethod.GET)
     @FuelExceptionHandler()
     public String checkFuel(@RequestParam String type) throws Exception {
